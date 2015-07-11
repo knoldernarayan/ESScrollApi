@@ -24,7 +24,7 @@ object ESApiObject extends App with ESScrollApi {
   }
   val client = getClient
 
-  val result = scrollFeatch(client, QueryBuilders.matchAllQuery(), "gnip_index", "/tmp/outputJson.json")
+  val result = scrollFetch(client, QueryBuilders.matchAllQuery(), "gnip_index", "/tmp/outputJson.json")
   println("@@@@@@@@@@@@@@@@@@@@@@@@  total number of scrolled documents is " + result)
   deleteIndex(client, "gnip_index")
   client.close()

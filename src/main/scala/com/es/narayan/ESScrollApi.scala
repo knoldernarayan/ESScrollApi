@@ -20,7 +20,7 @@ import scala.io.Source
 trait ESScrollApi {
 
   /**
-   * This is scrollFeatch method which provides pagination over selected data
+   * This is scrollFetch method which provides pagination over selected data
    *
    * @param client
    * @param query
@@ -30,7 +30,7 @@ trait ESScrollApi {
    * @param scrollKeepAlive
    * @return
    */
-  def scrollFeatch(client: Client, query: QueryBuilder, indexName: String, outputFileUrl: String,
+  def scrollFetch(client: Client, query: QueryBuilder, indexName: String, outputFileUrl: String,
                    scrollSize: Int = 10, scrollKeepAlive: String = "10m"): Int = {
 
     var scrollResp = client.prepareSearch(indexName).setSearchType(SearchType.SCAN).
@@ -44,7 +44,7 @@ trait ESScrollApi {
       val outputStream = new FileOutputStream(outputFile)
       val outputWriter = new OutputStreamWriter(outputStream)
       @tailrec
-      def featch() {
+      def fetch() {
         scrollResp = client.prepareSearchScroll(scrollResp.getScrollId()).setScroll(new TimeValue(60000)).execute().actionGet()
         println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@   scroll length " + scrollResp.getHits.getHits.length)
         if (scrollResp.getHits.getHits.length == 0) {
@@ -59,10 +59,10 @@ trait ESScrollApi {
 
         } else {
           successCount = writeDataOnLocalFile(scrollResp.getHits.getHits, outputWriter, successCount, outputFileName)
-          featch()
+          fetch()
         }
       }
-      featch()
+      fetch()
       outputWriter.flush()
       outputWriter.close()
       successCount
@@ -126,7 +126,7 @@ trait ESScrollApi {
     val deleteIndexRequest = new DeleteIndexRequest(indexName)
     val deleteResponse = client.admin().indices().delete(deleteIndexRequest).actionGet()
     if (deleteResponse.isAcknowledged())
-      println("@@@@@@@@@@@  index is successfuly deleted")
+      println("@@@@@@@@@@@  index is successfully deleted")
     else
       println("@@@@@@@@@@@@@@@@ index is not deleted ")
   }

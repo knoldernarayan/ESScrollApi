@@ -7,6 +7,7 @@ import org.elasticsearch.index.query.QueryBuilders
 
 object ESApiObject extends App with ESScrollApi {
 
+
   /**
    * getClient method returns local node client
    *
@@ -25,7 +26,7 @@ object ESApiObject extends App with ESScrollApi {
   val client = getClient
 
   val result = scrollFetch(client, QueryBuilders.matchAllQuery(), "gnip_index", "/tmp/outputJson.json")
-  println("@@@@@@@@@@@@@@@@@@@@@@@@  total number of scrolled documents is " + result)
+  log.info("total number of scrolled documents is " + result)
   deleteIndex(client, "gnip_index")
   client.close()
 }

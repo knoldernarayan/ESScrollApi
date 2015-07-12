@@ -12,12 +12,16 @@ import java.io.File
 import org.elasticsearch.client.Client
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest
 import scala.io.Source
+import org.slf4j.LoggerFactory
 
 /**
  * @author narayan
  *
  */
 trait ESScrollApi {
+  
+  
+  val log = LoggerFactory.getLogger(this.getClass)
 
   /**
    * This is scrollFetch method which provides pagination over selected data
@@ -36,7 +40,7 @@ trait ESScrollApi {
     var scrollResp = client.prepareSearch(indexName).setSearchType(SearchType.SCAN).
       setScroll(scrollKeepAlive).setQuery(query).setSize(scrollSize).execute().actionGet()
     val totalCount = scrollResp.getHits.getTotalHits
-    println("@@@@@@@@@@@@@@@@@@@@@@ totalhits " + totalCount)
+    log.info("totalhits " + totalCount)
     var successCount = 0
     if (totalCount > 0) {
       val outputFile = new File(outputFileUrl)
@@ -46,14 +50,14 @@ trait ESScrollApi {
       @tailrec
       def fetch() {
         scrollResp = client.prepareSearchScroll(scrollResp.getScrollId()).setScroll(new TimeValue(60000)).execute().actionGet()
-        println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@   scroll length " + scrollResp.getHits.getHits.length)
+        log.info("scroll length " + scrollResp.getHits.getHits.length)
         if (scrollResp.getHits.getHits.length == 0) {
           try {
             client.prepareClearScroll().addScrollId(scrollResp.getScrollId).execute().actionGet()
             return
           } catch {
             case ex: Throwable =>
-              println("we can't more scroll due to " + ex)
+              log.error("we can't more scroll due to " + ex)
               return
           }
 
@@ -91,7 +95,7 @@ trait ESScrollApi {
           successCountModified += 1
         } catch {
           case ex: IOException =>
-            println(s"can't write to the file ${outputFileName} due to ${ex}")
+            log.error(s"can't write to the file ${outputFileName} due to ${ex}")
             badWriter = true
         }
       }
@@ -126,9 +130,9 @@ trait ESScrollApi {
     val deleteIndexRequest = new DeleteIndexRequest(indexName)
     val deleteResponse = client.admin().indices().delete(deleteIndexRequest).actionGet()
     if (deleteResponse.isAcknowledged())
-      println("@@@@@@@@@@@  index is successfully deleted")
+      log.info("index is successfully deleted")
     else
-      println("@@@@@@@@@@@@@@@@ index is not deleted ")
+      log.warn("index is not deleted ")
   }
 
 }
